@@ -837,6 +837,7 @@ public abstract class AbstractQueuedSynchronizer
              * need a signal, but don't park yet.  Caller will need to
              * retry to make sure it cannot acquire before parking.
              */
+            // 将当前节点的前驱节点设置为 SIGNAL 状态，用于后续唤醒操作
             // 永远是后置节点取修改前节点的 waitStatus。
             // 队尾节点的 waitStatus 永远是0，前面是 -1
             // 修改哨兵节点的 waitStatus：0 -> -1
@@ -855,7 +856,7 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * Convenience method to park and then check if interrupted
-     *
+     * 将当前线程挂起
      * @return {@code true} if interrupted
      */
     private final boolean parkAndCheckInterrupt() {
