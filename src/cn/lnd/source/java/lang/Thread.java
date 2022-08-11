@@ -927,6 +927,10 @@ class Thread implements Runnable {
     }
 
     /**
+     * 测试当前线程是否被中断。
+     * 该方法会清除线程的中断状态，换句话说就是，如果这个方法被连续调用两次，第二次调用将返回 false
+     * （除非当前线程再次被中断，在第一次调用清除其中断状态之后，第二次调用检查它之前）。
+     *
      * Tests whether the current thread has been interrupted.  The
      * <i>interrupted status</i> of the thread is cleared by this method.  In
      * other words, if this method were to be called twice in succession, the
@@ -965,6 +969,7 @@ class Thread implements Runnable {
     }
 
     /**
+     * 测试某个线程是否已被中断。根据传递的 ClearInterrupted 的值，判断是否重置中断状态。
      * Tests if some Thread has been interrupted.  The interrupted state
      * is reset or not based on the value of ClearInterrupted that is
      * passed.

@@ -13,5 +13,6 @@ public class Test {
         hashMap.put("a", 1);
         hashMap.put("b", 2);
         hashMap.put("c", 3);
+        System.out.println("Hello");
     }
 }

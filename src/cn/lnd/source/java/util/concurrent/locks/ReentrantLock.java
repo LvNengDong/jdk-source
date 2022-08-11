@@ -152,12 +152,13 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             int c = getState() - releases;
             if (Thread.currentThread() != getExclusiveOwnerThread())
                 throw new IllegalMonitorStateException();
-            boolean free = false;
+            boolean free = false; //释放标志位。false表示不可以释放，true表示可以释放
             if (c == 0) {
                 free = true;
                 setExclusiveOwnerThread(null);
             }
             setState(c);
+            // 只有 c==0 时才返回 true，如果 c!=0，返回的是 false，这用于可重入锁
             return free;
         }
 
@@ -220,10 +221,12 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     /**
      * Sync object for fair locks
      */
-    static final class FairSync extends Sync {
+    static final class FairSync extends Sync {  //AQS子类
         private static final long serialVersionUID = -3000897897090466540L;
 
+        // Step2->
         final void lock() {
+            // 尝试获取临界资源
             acquire(1);
         }
 
@@ -231,18 +234,21 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * Fair version of tryAcquire.  Don't grant access unless
          * recursive call or no waiters or is first.
          */
+        // Step4->
         protected final boolean tryAcquire(int acquires) {
             final Thread current = Thread.currentThread();
             int c = getState();
             if (c == 0) {
-                // 有礼貌，不加塞。虽然现在没有线程在使用锁，但是我不插队
-                // hasQueuedPredecessors返回true表示当前线程必须排队，取反后不进入该分支，也就不会去直接尝试获取锁资源
+                // 有礼貌，不加塞。虽然发现现在没有线程在使用锁（c==0），但是我不插队，它会先去队列中查看前面是否有线程正在排队
+                // hasQueuedPredecessors返回true表示AQS等待队列中有排队的前辈，取反后不进入该分支，也就不会去直接尝试获取锁资源
+                // 如果没有排队的前辈，才会执行CAS操作去抢占临界资源（设置state==acquires），并设置临界资源的当前占用线程
                 if (!hasQueuedPredecessors() &&
                     compareAndSetState(0, acquires)) {
                     setExclusiveOwnerThread(current);
                     return true;
                 }
             }
+            // 如果 c!=0，进行是否为可重入锁的判断，进入该分支的线程是可以抢到临界资源的
             else if (current == getExclusiveOwnerThread()) {
                 int nextc = c + acquires;
                 if (nextc < 0)
@@ -250,6 +256,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
                 setState(nextc);
                 return true;
             }
+            // 如果返回 false，表示没有抢到临界资源，接下来就需要将其加入到 AQS 等待队列了
             return false;
         }
     }
@@ -286,6 +293,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * purposes and lies dormant until the lock has been acquired,
      * at which time the lock hold count is set to one.
      */
+    // Step1 ->
     public void lock() {
         sync.lock();
     }
