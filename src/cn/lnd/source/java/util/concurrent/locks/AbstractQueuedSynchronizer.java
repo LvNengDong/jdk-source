@@ -518,6 +518,8 @@ public abstract class AbstractQueuedSynchronizer
 
         /* 以下这两个构造函数分别用于不同的使用场景 */
         Node(Thread thread, Node mode) {     // Used by addWaiter
+            // 通过 nextWaiter 是否为 null 来判断当前 Node 的模式。
+            // 若 nextWaiter 为null，说明是独占模式；若 nextWaiter 指向一个提前创建好的 node，则说明是共享模式
             this.nextWaiter = mode;
             this.thread = thread;
         }
